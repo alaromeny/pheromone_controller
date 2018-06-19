@@ -1,0 +1,3 @@
+#ignore these types of files
+*.pyc
+*.pyo

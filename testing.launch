@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+
+
+<launch>
+
+  <arg name="robot_name" default="robot0"/>
+  <arg name="robot_ID" default="0"/>
+  <arg name="distance_to_walls" default="1"/>
+  <arg name="cmd_val_update_rate" default="10"/>
+  <arg name="recoveryTime" default="0.4"/>
+  
+  
+  
+  <group ns="$(arg robot_name)">   
+  <node name="pheromone_controller" pkg="pheromone_controller" type="wrapper_pheromone_controller.py" output="screen"/>
+
+	<!-- <node name="dwa" pkg="uav_map" type="dwa" output="screen"/> -->
+
+ <!--    <node name="robot_controller" pkg="ground_controller" type="wrapperGround.py" respawn="false" output="log">
+      <param name="distance_to_walls" value="$(arg distance_to_walls)"/>
+      <param name="cmd_val_update_rate" value="$(arg cmd_val_update_rate)"/>
+      <param name="recoveryTime" value="$(arg recoveryTime)"/>
+      <param name="robot_ID" value="$(arg robot_ID)"/>
+    </node>  -->
+
+   <!--  <node name="slam_gmapping" pkg="gmapping" type="slam_gmapping" respawn="false" output="log" args="scan:=/$(arg robot_name)/scan map:=/$(arg robot_name)/map">
+      <param name="map_frame" value="/map" />
+      <param name="odom_frame" value="/$(arg robot_name)/odom"/>
+      <param name="base_frame" value="/$(arg robot_name)/base_link"/>
+    </node>  -->
+
+    <!-- <node pkg="robot_state_publisher" type="state_publisher" name="robot_state_publisher"/> -->
+
+    <!-- <node name="tf_static_odom_base" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 $(arg robot_name)/hokuyo_link $(arg robot_name)/hokuyo_frame 100"/> -->
+
+    <!-- <node name="map_to_image_node_mod" pkg="map_to_jpeg" type="map_to_image_node_mod" respawn="false" output="log" args="map:=/$(arg robot_name)/map map_image/full:=/$(arg robot_name)/map_image"/> -->
+    
+    <!-- <node pkg="edinbots_detection" type="detect_victim_rgb.py" name="DetectVictimRGB"/>
+	<node pkg="edinbots_detection" type="camera_laser.py" name="DistancePC" output="screen"/>
+	<node pkg="edinbots_detection" type="detect_victim_thermal.py" name="DetectVictimThermal"/> 
+    
+    <node name="translator" pkg="uav_map" type="cam_to_map" /> -->
+    
+  </group>
+</launch>
+

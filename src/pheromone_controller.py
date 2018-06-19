@@ -25,25 +25,11 @@ class pheromoneController:
 
         self.robotWidth = robotWidth
         self.robotHeight = robotHeight
-        self.listenerTopicName_command = 'cmd_vel'
-        self.listenerTopicName_robotOdom = 'odom'
-
-        self.N_DISTANCES = 6  # do not modify
-        self.MAX_LASER_DIST = 20
-        self.STEER_THRESHOLD = 0.8
-        self.map_initiated = False
-        # distances measured by lasers:
-        self.distance_obstacle = np.full(self.N_DISTANCES, -1, dtype=np.float64)
-        self.walls_bool = np.zeros(self.N_DISTANCES-1)
-        self.obstacleAhead = False
         self.localStigmergyMap = np.full(1,1,dtype=np.uint16)
         self.mapRecieved = False
-        self.victimFound = False
-        self.pub = rospy.Publisher(self.listenerTopicName_command, Twist, queue_size = 1)
         self.xWeight = 0
         self.yWeight = 0
-        self.avoidValue = 0.0
-        self.turn_threshold = 0.5
+        self.theta = 0
         self.robotNameSpace = rospy.get_namespace()        
 
         # how often to publish the local maps of each robot (Hz)
@@ -54,21 +40,25 @@ class pheromoneController:
         print "My name space is: " + self.robotNameSpace
 
         self.robot = Robot(self.robotWidth, self.robotHeight, self.robotNameSpace)
-        self.MIN_LASER_DIST = rospy.get_param('~distance_to_walls', 1)
-        self.publisher_rate = rospy.get_param('~update_rate', 10)
+        self.publisher_rate = rospy.get_param('~publisher_rate', 10)
+
+        self.pubTopicName_pherHeading = str(self.robotNameSpace) + "pheromoneHeading"
+        self.pub = rospy.Publisher(self.pubTopicName_pherHeading, Float32, queue_size = 1)
+        print "Publishing to the topic: " + self.pubTopicName_pherHeading
+
         self.listenerTopicName_pheromones = '/ground/localPheromone' + str(self.robotNameSpace)
+        rospy.Subscriber(self.listenerTopicName_pheromones, Int16MultiArray, self.callBackStigmergy)
+        print "Subscribed to the topic: " + self.listenerTopicName_pheromones
+
 
 
     #This calculates the norm between the robot and a new point x,y
     def norm( self, x_pos, y_pos):
       return math.sqrt( x_pos*x_pos + y_pos*y_pos)
 
-
     #This calculates the rotation needed to move to a new point x,y from the current frame of reference
     def calcRotation( self, x_pos, y_pos):
       return math.atan2(y_pos, x_pos);
-
-
 
     def grabCentre( self, localStigmergyMap):
 
@@ -97,23 +87,12 @@ class pheromoneController:
         arrayData = np.reshape(arrayData, (arrayDim,arrayDim))
         return arrayData
 
-
     def rotateCoordinate(self, px, py, angle):
         ##Rotate a point counterclockwise by a given angle around a given origin.
         ##The angle should be given in radians.
         qx =  math.cos(angle) * (px) - math.sin(angle) * (py)
         qy =  math.sin(angle) * (px) + math.cos(angle) * (py)
         return qx, qy
-
-
-    def callBackStigmergy( self, data):
-        self.localStigmergyMap = self.formatMessage( data)
-        (self.xWeight, self.yWeight) = self.grabCentre( self.localStigmergyMap)
-        self.theta = self.calcRotation( self.xWeight, self.yWeight)
-        self.mapRecieved = True
-        # print "ROBOT " + str(self.robot.ID) + " has recieved the stigmergy map"
-        # print self.localStigmergyMap
-
 
     def calculateNewHeading( self):
         self.theta = self.calcRotation( self.xWeight, self.yWeight)
@@ -134,21 +113,23 @@ class pheromoneController:
         res = res - 90
         return res
 
-    def callBackOdom( self, data):
-        self.robot.x = data.pose.pose.position.x
-        self.robot.y = data.pose.pose.position.y
-        self.robot.quaternion = data.pose.pose.orientation
-        self.robot.quaternion = [data.pose.pose.orientation.x, data.pose.pose.orientation.y, data.pose.pose.orientation.z, data.pose.pose.orientation.w]
-        ax, ay, az = tf.euler_from_quaternion_rounded(0.005, self.robot.quaternion)
-        self.robot.eularAngles = [ax, ay, az]
 
     def normaliseTheta( self, theta):
         if theta < 0:
                 theta = 360 + theta
         return theta
 
+
+    def callBackStigmergy( self, data):
+        self.localStigmergyMap = self.formatMessage( data)
+        (self.xWeight, self.yWeight) = self.grabCentre( self.localStigmergyMap)
+        self.theta = self.calcRotation( self.xWeight, self.yWeight)
+        print self.theta
+        self.mapRecieved = True
+
+
     def publisher(self):
-        self.pub.publish(self.robot.twist)
+        self.pub.publish(self.theta)
 
     def listener(self):
 
@@ -157,11 +138,8 @@ class pheromoneController:
         # anonymous=True flag means that rospy will choose a unique
         # name for our 'listener' node so that multiple listeners can
         # run simultaneously.
-        rospy.init_node('robotController', anonymous=True)
+        rospy.init_node('pheromoneController', anonymous=True)
         self.setUp()
-        rospy.Subscriber(self.listenerTopicName_pheromones, Int16MultiArray, self.callBackStigmergy)
-        rospy.Subscriber(self.listenerTopicName_robotOdom, Odometry, self.callBackOdom)
-
         while not rospy.is_shutdown():
 
             self.publisher()
