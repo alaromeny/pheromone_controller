@@ -39,11 +39,13 @@ diffusion_rate = 10
 # TESTING DATA
 
 
+This node needs to run on each robot, including UAVs, ground and pioneers.
+
 
 #### Data Coming In
 
 
-- Should read all the name spaces of all robots in the environmentand print these to the screen as it's setting up.
+- Should read it's own namespace
 
 - Should listen to the following topics
 ```
@@ -53,9 +55,7 @@ diffusion_rate = 10
 
 #### Internal Behaviour
 
-- Pheromones left by robots should be much less than those left by the walls
-- Pheromones left by robots should stack over time
-- Pheromones left by robots should be in a separate array from those left by the walls
+- It takes in a local pheromone map, calculates the robot's new heading 
 
 
 
