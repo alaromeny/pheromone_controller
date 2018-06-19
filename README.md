@@ -56,7 +56,7 @@ This node needs to run on each robot, including UAVs, ground and pioneers.
 #### Internal Behaviour
 
 - It takes in a local pheromone map, calculates the robot's new heading 
-
+- It is just a data translation package and as long as it's spitting our floats which are not 0.0 then it's working
 
 
 #### Data Going Out
