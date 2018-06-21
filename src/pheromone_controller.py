@@ -82,9 +82,10 @@ class pheromoneController:
     def formatMessage( self, data):
         arraySize = data.layout.dim[0].size
         arrayDim = data.layout.dim[0].stride
+        arrayHeight = int(arraySize/arrayDim)
         arrayData = data.data
         arrayData = np.asarray(arrayData)
-        arrayData = np.reshape(arrayData, (arrayDim,arrayDim))
+        arrayData = np.reshape(arrayData, (arrayDim,arrayHeight))
         return arrayData
 
     def rotateCoordinate(self, px, py, angle):
